@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, Quoridor!");
+    println!("Hello, Quoridor-server!");
 }
