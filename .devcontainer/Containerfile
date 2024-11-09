@@ -1,0 +1,7 @@
+FROM registry.fedoraproject.org/fedora-minimal:latest
+RUN dnf install -y rust cargo clippy rust-src rustfmt rust-doc git powerline && \
+    dnf clean all -y && \
+    cp /etc/skel/.bashrc /root/ && \
+    mkdir /root/.bashrc.d && \
+    ln -s /usr/share/powerline/bash/powerline.sh ~/.bashrc.d/powerline && \
+    /usr/bin/powerline-daemon -q
