@@ -14,7 +14,11 @@ The service will:
 - Provide a leaderboard functionality
 - Provide a player matching functionality
 - Provide a tournament functionality
-- Provide an admin level interface for special maintenance tasks
+- Provide an admin level interface for special maintenance tasks, like
+    - Creating the database
+    - Initializing the database
+    - Resetting a locked player
+    - Locking a player
 
 For the rules of the game of Quoridor itself, see: https://en.wikipedia.org/wiki/Quoridor
 
@@ -22,3 +26,8 @@ This is the backend service part. The following clients are planned (in seperate
 - Linux CLI/TUI version
 - Linux Gnome version
 - Web version (implemented as a stateless webservice)
+
+The implementation will be as idiomatic Rust as possible. The follwing main crates will be used:
+- async tokio run-time
+- axum for the routing
+- sqlx for the interface to both PostGreSQL and sqlite
