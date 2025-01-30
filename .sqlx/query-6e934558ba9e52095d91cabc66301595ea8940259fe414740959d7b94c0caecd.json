@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO users (email, password, role, email_verified)\n        VALUES (?, ?, 'player', false)\n        RETURNING userid, email, password, role as \"role: _\", email_verified\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "userid",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "email",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "password",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "role: _",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "email_verified",
+        "ordinal": 4,
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "6e934558ba9e52095d91cabc66301595ea8940259fe414740959d7b94c0caecd"
+}

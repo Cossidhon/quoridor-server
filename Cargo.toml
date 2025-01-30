@@ -4,4 +4,42 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rand = "0.8.5"
+# Web framework
+axum = "0.7.3" # Latest stable version as of October 2023
+
+# Async runtime
+tokio = { version = "1.32.0", features = ["full"] }
+
+# Database
+sqlx = { version = "0.7.2", features = ["sqlite", "runtime-tokio-native-tls", "migrate"] }
+
+# Serialization/deserialization
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
+
+# Password hashing
+argon2 = "0.5.1"
+
+# Email
+lettre = "0.11.0" # Latest stable version as of October 2023
+
+# Environment variables
+dotenv = "0.15.0"
+
+# Error handling
+anyhow = "1.0.75"
+
+# Logging
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
+
+# JWT
+jsonwebtoken = "9.2.0" # Latest stable version as of October 2023
+
+# UUID
+uuid = { version = "1.4.1", features = ["v4"] }
+
+# Validation
+validator = { version = "0.16.1", features = ["derive"] }
+
+regex = "1.10.2" # Latest stable version as of now
