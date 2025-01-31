@@ -9,6 +9,7 @@ pub struct Claims {
     pub exp: usize,  // Expiration time
 }
 
+/// Create a JWT token
 pub fn create_jwt(user_id: &str, role: &str, secret: &str, expiration: usize) -> Result<String> {
     let claims = Claims {
         sub: user_id.to_string(),
@@ -19,6 +20,7 @@ pub fn create_jwt(user_id: &str, role: &str, secret: &str, expiration: usize) ->
     Ok(token)
 }
 
+/// Validate a JWT token
 pub fn validate_jwt(token: &str, secret: &str) -> Result<Claims> {
     let token_data = decode::<Claims>(token, &DecodingKey::from_secret(secret.as_ref()), &Validation::default())?;
     Ok(token_data.claims)

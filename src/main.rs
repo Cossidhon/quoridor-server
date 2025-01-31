@@ -12,9 +12,6 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Disable back tracing by default
-    std::env::set_var("RUST_BACKTRACE", "0");
-
     // Initialize tracing for logging
     tracing_subscriber::fmt::init();
 
@@ -29,7 +26,10 @@ async fn main() -> Result<()> {
     info!("Connected to database");
 
     // Build the application
-    let app = Router::new().route("/", get(|| async { "Hello, Quoridor!" }));
+    let app = Router::new()
+        .route("/", get(|| async { "Hello, Quoridor!" }))
+        .merge(routes::auth::auth_router()) // Add auth routes
+        .merge(routes::user::user_router()); // Add user management routes
 
     // Start the server and handle errors gracefully
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
