@@ -1,19 +1,21 @@
 use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
 use serde::{Deserialize, Serialize};
 use anyhow::Result;
+use crate::models::user::Email;
+
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: String, // User ID
-    pub role: String,
+    pub email: Email, // User Email
+    pub is_admin: bool, // Admin flag
     pub exp: usize,  // Expiration time
 }
 
 /// Create a JWT token
-pub fn create_jwt(user_id: &str, role: &str, secret: &str, expiration: usize) -> Result<String> {
+pub fn create_jwt(email: &Email, is_admin: bool, secret: &str, expiration: usize) -> Result<String> {
     let claims = Claims {
-        sub: user_id.to_string(),
-        role: role.to_string(),
+        email,
+        is_admin,
         exp: expiration,
     };
     let token = encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_ref()))?;

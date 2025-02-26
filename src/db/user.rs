@@ -1,13 +1,14 @@
 use sqlx::SqlitePool;
 use anyhow::Result;
-use crate::models::user::User;
+use crate::models::user::{User, Name, Email, Password};
+use crate::models::Id;
 
 /// Get all users from the database
-pub async fn db_get_all_users(pool: &SqlitePool) -> Result<Vec<User>> {
+pub async fn get_all(pool: &SqlitePool) -> Result<Vec<User>> {
     let users = sqlx::query_as!(
         User,
         r#"
-        SELECT userid, role, password, email
+        SELECT user_id, name, email, password_hash, is_admin, is_valid, is_active
         FROM user
         "#
     )
@@ -17,16 +18,16 @@ pub async fn db_get_all_users(pool: &SqlitePool) -> Result<Vec<User>> {
     Ok(users)
 }
 
-/// Get a user by userid
-pub async fn db_get_user_by_id(pool: &SqlitePool, userid: &str) -> Result<Option<User>> {
+/// Get a user
+pub async fn get(pool: &SqlitePool, user_id: Id) -> Result<Option<User>> {
     let user = sqlx::query_as!(
         User,
         r#"
-        SELECT userid, role, password, email
+        SELECT user_id, name, email, password_hash, is_admin, is_valid, is_active
         FROM user
-        WHERE userid = ?
+        WHERE user_id = ?
         "#,
-        userid
+        user_id
     )
     .fetch_optional(pool)
     .await?;
@@ -34,69 +35,12 @@ pub async fn db_get_user_by_id(pool: &SqlitePool, userid: &str) -> Result<Option
     Ok(user)
 }
 
-/// Update a user's role and email
-pub async fn db_update_user(pool: &SqlitePool, userid: &str, role: &str, email: &str) -> Result<()> {
-    sqlx::query!(
-        r#"
-        UPDATE user
-        SET role = ?, email = ?
-        WHERE userid = ?
-        "#,
-        role,
-        email,
-        userid
-    )
-    .execute(pool)
-    .await?;
-
-    Ok(())
-}
-
-/// Create a new user in the database
-pub async fn db_create_user(
-    pool: &SqlitePool,
-    userid: &str,
-    role: &str,
-    password: &str,
-    email: &str,
-) -> Result<()> {
-    sqlx::query!(
-        r#"
-        INSERT INTO user (userid, role, password, email)
-        VALUES (?, ?, ?, ?)
-        "#,
-        userid,
-        role,
-        password,
-        email
-    )
-    .execute(pool)
-    .await?;
-
-    Ok(())
-}
-
-/// Delete a user by userid
-pub async fn db_delete_user(pool: &SqlitePool, userid: &str) -> Result<()> {
-    sqlx::query!(
-        r#"
-        DELETE FROM user
-        WHERE userid = ?
-        "#,
-        userid
-    )
-    .execute(pool)
-    .await?;
-
-    Ok(())
-}
-
-/// Get a user by email
-pub async fn db_get_user_by_email(pool: &SqlitePool, email: &str) -> Result<Option<User>> {
+/// Get a user by email address
+pub async fn get_by_email(pool: &SqlitePool, email: Email) -> Result<Option<User>> {
     let user = sqlx::query_as!(
         User,
         r#"
-        SELECT userid, role, password, email
+        SELECT user_id, name, email, password_hash, is_admin, is_valid, is_active
         FROM user
         WHERE email = ?
         "#,
@@ -106,4 +50,96 @@ pub async fn db_get_user_by_email(pool: &SqlitePool, email: &str) -> Result<Opti
     .await?;
 
     Ok(user)
+}
+
+/// Update all user's fields, except for email and password
+pub async fn update(pool: &SqlitePool, user_id: Id, name: Name, email: Email, is_admin: &bool, is_valid: &bool, is_active: &bool) -> Result<()> {
+    sqlx::query!(
+        r#"
+        UPDATE user
+        SET name = ?, email = ?, is_admin = ?, is_valid = ?, is_active = ?
+        WHERE user_id = ?
+        "#,
+        name,
+        email,
+        is_admin,
+        is_valid,
+        is_active,
+        user_id
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+/// Create a new user in the database, all flags are set to default values
+pub async fn create(
+    pool: &SqlitePool,
+    name: &Name,
+    email: &Email,
+    password_hash: &str,
+) -> Result<()> {
+    sqlx::query!(
+        r#"
+        INSERT INTO user (name, email, password_hash)
+        VALUES (?, ?, ?)
+        "#,
+        name,
+        email,
+        password_hash
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+/// Delete a user by id
+pub async fn delete(pool: &SqlitePool, user_id: Id) -> Result<()> {
+    sqlx::query!(
+        r#"
+        DELETE FROM user
+        WHERE user_id = ?
+        "#,
+        user_id
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+/// Change password of a user
+pub async fn change_password(pool: &SqlitePool, email: Email, password_hash: String) -> Result<()> {
+    sqlx::query!(
+        r#"
+        UPDATE user
+        SET password_hash = ?
+        WHERE email = ?
+        "#,
+        password_hash,
+        email
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+/// Change email of a user
+pub async fn change_email(pool: &SqlitePool, email: Email, new_email: Email) -> Result<()> {
+    sqlx::query!(
+        r#"
+        UPDATE user
+        SET email = ?
+        WHERE email = ?
+        "#,
+        email,
+        new_email
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(())
 }

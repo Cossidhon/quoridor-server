@@ -4,7 +4,7 @@ use anyhow::{anyhow, Context, Result};
 use validator::validate_email; // For email validation
 use regex::Regex; // For FQDN validation
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
     pub database_url: String,
     pub port: u16,

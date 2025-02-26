@@ -1,32 +1,50 @@
 use anyhow::Result;
-use crate::models::user::User;
-use crate::db::user::{db_get_all_users, db_get_user_by_id, db_update_user, db_delete_user};
+use crate::models::user::{User, Name, Email, Password};
+use crate::db::user;
+use crate::models::Id;
 
-/// Get all users
-pub async fn get_all_users(pool: &sqlx::SqlitePool) -> Result<Vec<User>> {
-    let users = db_get_all_users(pool).await?;
+/// (ADMIN ONLY) Get all users
+pub async fn get_all(pool: &sqlx::SqlitePool) -> Result<Vec<User>> {
+    // TODO: check if user is admin
+    let users = user::get_all(pool).await?;
     Ok(users)
 }
 
-/// Get a user by ID
-pub async fn get_user_by_id(pool: &sqlx::SqlitePool, userid: &str) -> Result<Option<User>> {
-    let user = db_get_user_by_id(pool, userid).await?;
+/// (ADMIN ONLY) Get a user
+pub async fn get(pool: &sqlx::SqlitePool, user_id: Id) -> Result<Option<User>> {
+    // TODO: check if user is admin
+    let user = user::get(pool, user_id).await?;
     Ok(user)
 }
 
-/// Update a user's information
-pub async fn update_user_info(
-    pool: &sqlx::SqlitePool,
-    userid: &str,
-    role: &str,
-    email: &str,
-) -> Result<()> {
-    db_update_user(pool, userid, role, email).await?;
+/// Delete a user
+pub async fn delete(pool: &sqlx::SqlitePool, user_id: Id) -> Result<()> {
+    // TODO: check if user is self or admin
+    user::delete(pool, user_id).await?;
     Ok(())
 }
 
-/// Delete a user by ID
-pub async fn delete_user_by_id(pool: &sqlx::SqlitePool, userid: &str) -> Result<()> {
-    db_delete_user(pool, userid).await?;
+/// Change a user's password
+pub async fn change_password(pool: &sqlx::SqlitePool, email: Email, password: Password) -> Result<()> {
+    // TODO: check if user is self of admin
+    let password_hash = "hash".to_string();
+    user::change_password(pool, email, password_hash).await?;
+    Ok(())
+}
+
+/// Change a user's email
+pub async fn change_email(pool: &sqlx::SqlitePool, email: Email, new_email: Email) -> Result<()> {
+    // TODO: check if user is self or admin
+    user::change_email(pool, email, new_email).await?;
+    // TODO: change email adress in other tables as email is used as the key
+    Ok(())
+}
+
+/// Create a new user
+pub async fn create(pool: &sqlx::SqlitePool, name: Name, email: Email, password: Password) -> Result<()> {
+    // TODO: validate input
+    // TODO: validate if user already exists
+    // TODO: hash password
+    //user::create(pool, name, email, password_hash).await?;
     Ok(())
 }

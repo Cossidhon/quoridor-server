@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        UPDATE user\n        SET password_hash = ?\n        WHERE email = ?\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "02669562f585ce523c789e673c91a36d4e23000357f28cc19732f0e782250eca"
+}

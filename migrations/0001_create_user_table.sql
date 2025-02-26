@@ -1,7 +1,10 @@
 -- Create the user table
 CREATE TABLE IF NOT EXISTS user (
-    userid TEXT PRIMARY KEY NOT NULL,
-    role TEXT NOT NULL,
-    password TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE
+    user_id INTEGER PRIMARY KEY NOT NULL UNIQUE,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(240) NOT NULL,
+    is_admin BOOLEAN DEFAULT FALSE NOT NULL,
+    is_valid BOOLEAN DEFAULT FALSE NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL
 );

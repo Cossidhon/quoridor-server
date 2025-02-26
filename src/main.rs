@@ -1,7 +1,8 @@
-use axum::{Router, routing::get};
+use axum::{Router, routing::get, extract::State};
 use tracing::info;
 use anyhow::{Context, Result};
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 mod config;
 mod db;
@@ -25,14 +26,19 @@ async fn main() -> Result<()> {
         .context("Failed to connect to the database")?;
     info!("Connected to database");
 
+    // Save port to a variable before config is moved
+    let port = config.port;
+
     // Build the application
     let app = Router::new()
         .route("/", get(|| async { "Hello, Quoridor!" }))
         .merge(routes::auth::auth_router()) // Add auth routes
-        .merge(routes::user::user_router()); // Add user management routes
+        .merge(routes::user::user_router()) // Add user management routes
+        .with_state(Arc::new(config)) // Pass the configuration to the application state
+        .with_state(Arc::new(pool)); // Pass the database pool to the application state
 
     // Start the server and handle errors gracefully
-    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     info!("Server listening on {}", addr);
 
     axum::serve(

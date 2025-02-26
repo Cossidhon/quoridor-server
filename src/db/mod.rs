@@ -1,6 +1,7 @@
 pub mod user;
 
-pub use user::{db_create_user, db_get_user_by_email, db_get_all_users, db_get_user_by_id, db_update_user, db_delete_user};
+pub use user::{create, get_all, get, get_by_email, delete};
+
 
 use sqlx::{SqlitePool, migrate::MigrateDatabase};
 use anyhow::Result;
