@@ -54,6 +54,22 @@ impl Password {
     }
 }
 
+impl From<String> for Password {
+    fn from(password: String) -> Self {
+        Password(password)
+    }
+}
+
+/*
+impl TryFrom<String> for Password {
+    type Error = Vec<&'static str>;
+    
+    fn try_from(password: String) -> Result<Self, Vec<&'static str>> {
+        Password::new(&password)
+    }
+}
+*/
+
 /// Create the Name type
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(transparent)]
@@ -85,23 +101,6 @@ impl Name {
 impl From<String> for Name {
     fn from(value: String) -> Self {
         Name(value)
-    }
-}
-
-
-/*
-impl TryFrom<String> for Password {
-    type Error = Vec<&'static str>;
-    
-    fn try_from(password: String) -> Result<Self, Vec<&'static str>> {
-        Password::new(&password)
-    }
-}
-*/
-
-impl From<String> for Password {
-    fn from(password: String) -> Self {
-        Password(password)
     }
 }
 

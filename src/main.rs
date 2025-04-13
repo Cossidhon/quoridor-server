@@ -1,8 +1,11 @@
-use axum::{Router, routing::get, extract::State};
-use tracing::info;
+use axum::{Router, routing::get};
+use sqlx::SqlitePool;
+use tracing::{info, debug};
+//use tracing_subscriber::filter::EnvFilter;
+
 use anyhow::{Context, Result};
 use std::net::SocketAddr;
-use std::sync::Arc;
+use crate::config::Config;
 
 mod config;
 mod db;
@@ -11,10 +14,20 @@ mod routes;
 mod services;
 mod utils;
 
+#[derive(Clone)]
+struct AppState {
+    pool: SqlitePool,
+    config: Config,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     // Initialize tracing for logging
-    tracing_subscriber::fmt::init();
+    // TODO: use env LOG_LEVEL
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_target(false)
+        .init();
 
     // Load configuration and handle errors gracefully
     let config = config::Config::load().context("Failed to load configuration")?;
@@ -24,23 +37,23 @@ async fn main() -> Result<()> {
     let pool = db::connect(&config.database_url)
         .await
         .context("Failed to connect to the database")?;
+    
     info!("Connected to database");
 
-    // Save port to a variable before config is moved
-    let port = config.port;
+    // construct the addr to serve from
+    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
+
+    // Build the AppState to share among the routers
+    let app_state = AppState { pool, config };
 
     // Build the application
     let app = Router::new()
-        .route("/", get(|| async { "Hello, Quoridor!" }))
+        .route("/", get(|| async { "Hello, Quoridor Fan!" }))
         .merge(routes::auth::auth_router()) // Add auth routes
         .merge(routes::user::user_router()) // Add user management routes
-        .with_state(Arc::new(config)) // Pass the configuration to the application state
-        .with_state(Arc::new(pool)); // Pass the database pool to the application state
+        .with_state(app_state);// Pass the database pool to the application state
 
-    // Start the server and handle errors gracefully
-    let addr = SocketAddr::from(([0, 0, 0, 0], port));
-    info!("Server listening on {}", addr);
-
+    // Start the server and handle errors gracefully    
     axum::serve(
         tokio::net::TcpListener::bind(addr).await
             .context("Failed to bind to the specified address and port")?,
@@ -48,6 +61,8 @@ async fn main() -> Result<()> {
     )
     .await
     .context("Failed to start the server")?;
+    
+    info!("Server listening on {}", addr);
 
     Ok(())
 }

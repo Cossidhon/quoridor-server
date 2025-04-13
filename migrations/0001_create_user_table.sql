@@ -1,10 +1,14 @@
 -- Create the user table
 CREATE TABLE IF NOT EXISTS user (
     user_id INTEGER PRIMARY KEY NOT NULL UNIQUE,
-    name VARCHAR(50) NOT NULL,
+    name VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(240) NOT NULL,
     is_admin BOOLEAN DEFAULT FALSE NOT NULL,
     is_valid BOOLEAN DEFAULT FALSE NOT NULL,
     is_active BOOLEAN DEFAULT TRUE NOT NULL
 );
+
+-- Create indexes on the user table
+CREATE UNIQUE INDEX user_name ON user(name);
+CREATE UNIQUE INDEX user_email ON user(email);

@@ -29,14 +29,31 @@ pub async fn get(pool: &SqlitePool, user_id: Id) -> Result<Option<User>> {
         "#,
         user_id
     )
-    .fetch_optional(pool)
+    .fetch_one(pool)
     .await?;
 
-    Ok(user)
+    Ok(Some(user))
+}
+
+/// Get a user by name
+pub async fn get_by_name(pool: &SqlitePool, name: &Name) -> Result<Option<User>> {
+    let user = sqlx::query_as!(
+        User,
+        r#"
+        SELECT user_id, name, email, password_hash, is_admin, is_valid, is_active
+        FROM user
+        WHERE name = ?
+        "#,
+        name
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(Some(user))
 }
 
 /// Get a user by email address
-pub async fn get_by_email(pool: &SqlitePool, email: Email) -> Result<Option<User>> {
+pub async fn get_by_email(pool: &SqlitePool, email: &Email) -> Result<Option<User>> {
     let user = sqlx::query_as!(
         User,
         r#"
@@ -46,10 +63,10 @@ pub async fn get_by_email(pool: &SqlitePool, email: Email) -> Result<Option<User
         "#,
         email
     )
-    .fetch_optional(pool)
+    .fetch_one(pool)
     .await?;
 
-    Ok(user)
+    Ok(Some(user))
 }
 
 /// Update all user's fields, except for email and password
@@ -74,12 +91,7 @@ pub async fn update(pool: &SqlitePool, user_id: Id, name: Name, email: Email, is
 }
 
 /// Create a new user in the database, all flags are set to default values
-pub async fn create(
-    pool: &SqlitePool,
-    name: &Name,
-    email: &Email,
-    password_hash: &str,
-) -> Result<()> {
+pub async fn create(pool: &SqlitePool, name: &Name, email: &Email, password_hash: &str) -> Result<()> {
     sqlx::query!(
         r#"
         INSERT INTO user (name, email, password_hash)

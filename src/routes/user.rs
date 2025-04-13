@@ -1,10 +1,9 @@
 use axum::{Json, Router, routing::{get, put, delete}, http::StatusCode, extract::Path};
 use serde::{Deserialize, Serialize};
 use anyhow::Result;
-use crate::db::user;
+use crate::{db::user, AppState};
 use crate::models::user::{User, Email, Password};
 use crate::config::Config;
-use std::sync::Arc;
 
 #[derive(Debug, Serialize)]
 struct UserResponse {
@@ -26,6 +25,19 @@ struct ChangePasswordRequest {
     new_password: Password
 }
 
+/// User management router
+pub fn user_router() -> Router<AppState> {
+    Router::new()
+        .route("/users", get(get_users))
+        .route("/user/:email", 
+            get(get_user)
+            .put(update_user_handler)
+            .delete(delete_user_handler)
+            .post(create_user_handler))
+        .route("/user/:email/password", put(change_password))
+        .route("/user/:email/email", put(change_email))
+}
+
 /// Get all users
 async fn get_users() -> Result<Json<Vec<UserResponse>>, StatusCode> {
     // TODO: Fetch users from the database
@@ -45,7 +57,7 @@ async fn get_users() -> Result<Json<Vec<UserResponse>>, StatusCode> {
 async fn get_user(Path(email): Path<Email>) -> Result<Json<UserResponse>, StatusCode> {
     // TODO: Fetch user from the database
     let user = UserResponse {
-        email: Email::new("user@example.com").unwrap(),
+        email: email,
         is_admin: true,
         is_valid: true,
         is_active: true,
@@ -90,15 +102,3 @@ async fn change_email(Path(email): Path<String>, Json(payload): Json<ChangeEmail
     Ok(Json(format!("Email changed, login with the new email")))
 }
 
-/// User management router
-pub fn user_router() -> Router<Arc<Config>> {
-    Router::new()
-        .route("/users", get(get_users))
-        .route("/user/:email", 
-            get(get_user)
-            .put(update_user_handler)
-            .delete(delete_user_handler)
-            .post(create_user_handler))
-        .route("/user/:email/password", put(change_password))
-        .route("/user/:email/email", put(change_email))
-}

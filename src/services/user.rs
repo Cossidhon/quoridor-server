@@ -41,7 +41,7 @@ pub async fn change_email(pool: &sqlx::SqlitePool, email: Email, new_email: Emai
 }
 
 /// Create a new user
-pub async fn create(pool: &sqlx::SqlitePool, name: Name, email: Email, password: Password) -> Result<()> {
+pub async fn create(_pool: &sqlx::SqlitePool, name: Name, email: Email, password: Password) -> Result<()> {
     // TODO: validate input
     // TODO: validate if user already exists
     // TODO: hash password
