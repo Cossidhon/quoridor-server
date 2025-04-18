@@ -10,8 +10,8 @@ async fn quick_dev() -> Result<()> {
 
     hc.do_post("/signup",
         (r#"{
-            "name": "klaas",
-            "email": "piet@zwietz.nl",
+            "name": "piet4",
+            "email": "fred@zwietz.nl",
             "password": "P@ssW0rd"
             }
             "#,

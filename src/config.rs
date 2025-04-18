@@ -6,10 +6,8 @@ use regex::Regex; // For FQDN validation
 
 #[derive(Debug, Clone)]
 pub struct Config {
-    pub database_url: String,
-    pub port: u16,
     pub jwt_secret: String,
-    pub jwt_expiration: String,
+    pub jwt_expiration: i64,
     pub email_from_address: String,
     pub email_smtp_host: String,
     pub email_smtp_username: String,
@@ -17,24 +15,20 @@ pub struct Config {
 }
 
 impl Config {
+
+    // Load and validate environment variables
     pub fn load() -> Result<Self> {
         dotenv().ok();
 
-        // Load and validate environment variables
-        let database_url = env::var("DATABASE_URL")
-            .map_err(|_| anyhow!("DATABASE_URL is required and must be a valid SQLite connection string"))?;
-
-        let port = env::var("PORT")
-            .unwrap_or_else(|_| "3000".to_string()) // Default to 3000 if not provided
-            .parse::<u16>()
-            .map_err(|_| anyhow!("PORT must be a valid number between 1 and 65535"))?;
-
+        // jwt secret. Default is "Quoridor Server"
         let jwt_secret = env::var("JWT_SECRET")
-            .map_err(|_| anyhow!("JWT_SECRET is required and must be a non-empty string"))?;
+            .unwrap_or_else(|_| "Quoridor Server".to_string());
 
-        let jwt_expiration = env::var("JWT_EXPIRATION")
-            .unwrap_or_else(|_| "1h".to_string()); // Default to 1h if not provided
+        // token expiration in minutes. Default is 300 minutes if not provided
+        let jwt_expiration = env::var("JWT_DURATION")
+            .unwrap_or_else(|_| "300".to_string()).parse::<i64>().expect("JWT_DURATION is not numeric");
 
+        // email return address
         let email_from_address = env::var("EMAIL_FROM_ADDRESS")
             .map_err(|_| anyhow!("EMAIL_FROM_ADDRESS is required and must be a valid email address"))?;
 
@@ -43,6 +37,7 @@ impl Config {
             return Err(anyhow!("EMAIL_FROM_ADDRESS is not a valid email address"));
         }
 
+        // email smtp host
         let email_smtp_host = env::var("EMAIL_SMTP_HOST")
             .map_err(|_| anyhow!("EMAIL_SMTP_HOST is required and must be a valid FQDN"))?;
 
@@ -51,15 +46,15 @@ impl Config {
             return Err(anyhow!("EMAIL_SMTP_HOST is not a valid FQDN"));
         }
 
+        // smtp server username
         let email_smtp_username = env::var("EMAIL_SMTP_USERNAME")
             .map_err(|_| anyhow!("EMAIL_SMTP_USERNAME is required and must be a non-empty string"))?;
 
+        // smtp server password
         let email_smtp_password = env::var("EMAIL_SMTP_PASSWORD")
             .map_err(|_| anyhow!("EMAIL_SMTP_PASSWORD is required and must be a non-empty string"))?;
 
         Ok(Config {
-            database_url,
-            port,
             jwt_secret,
             jwt_expiration,
             email_from_address,

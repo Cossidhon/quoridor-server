@@ -1,6 +1,6 @@
 use sqlx::SqlitePool;
 use anyhow::Result;
-use crate::models::user::{User, Name, Email, Password};
+use crate::models::user::{Email, Name, Password, User, ValidationCode};
 use crate::models::Id;
 
 /// Get all users from the database
@@ -8,7 +8,7 @@ pub async fn get_all(pool: &SqlitePool) -> Result<Vec<User>> {
     let users = sqlx::query_as!(
         User,
         r#"
-        SELECT user_id, name, email, password_hash, is_admin, is_valid, is_active
+        SELECT user_id, name, email, password_hash, validation_code, is_admin, is_valid, is_active
         FROM user
         "#
     )
@@ -23,7 +23,7 @@ pub async fn get(pool: &SqlitePool, user_id: Id) -> Result<Option<User>> {
     let user = sqlx::query_as!(
         User,
         r#"
-        SELECT user_id, name, email, password_hash, is_admin, is_valid, is_active
+        SELECT user_id, name, email, password_hash, validation_code, is_admin, is_valid, is_active
         FROM user
         WHERE user_id = ?
         "#,
@@ -40,7 +40,7 @@ pub async fn get_by_name(pool: &SqlitePool, name: &Name) -> Result<Option<User>>
     let user = sqlx::query_as!(
         User,
         r#"
-        SELECT user_id, name, email, password_hash, is_admin, is_valid, is_active
+        SELECT user_id, name, email, password_hash, validation_code, is_admin, is_valid, is_active
         FROM user
         WHERE name = ?
         "#,
@@ -57,7 +57,7 @@ pub async fn get_by_email(pool: &SqlitePool, email: &Email) -> Result<Option<Use
     let user = sqlx::query_as!(
         User,
         r#"
-        SELECT user_id, name, email, password_hash, is_admin, is_valid, is_active
+        SELECT user_id, name, email, password_hash, validation_code, is_admin, is_valid, is_active
         FROM user
         WHERE email = ?
         "#,
@@ -90,16 +90,19 @@ pub async fn update(pool: &SqlitePool, user_id: Id, name: Name, email: Email, is
     Ok(())
 }
 
-/// Create a new user in the database, all flags are set to default values
-pub async fn create(pool: &SqlitePool, name: &Name, email: &Email, password_hash: &str) -> Result<()> {
+/// Create a new user in the database, all flags (except id_admin) are set to default values
+pub async fn create(pool: &SqlitePool, name: &Name, email: &Email, password_hash: &str, validation_code: &ValidationCode, is_admin: &bool) -> Result<()> {
+
     sqlx::query!(
         r#"
-        INSERT INTO user (name, email, password_hash)
-        VALUES (?, ?, ?)
+        INSERT INTO user (name, email, password_hash, validation_code, is_admin)
+        VALUES (?, ?, ?, ?, ?)
         "#,
         name,
         email,
-        password_hash
+        password_hash,
+        validation_code,
+        is_admin
     )
     .execute(pool)
     .await?;
@@ -107,14 +110,14 @@ pub async fn create(pool: &SqlitePool, name: &Name, email: &Email, password_hash
     Ok(())
 }
 
-/// Delete a user by id
-pub async fn delete(pool: &SqlitePool, user_id: Id) -> Result<()> {
+/// Delete a user by name
+pub async fn delete(pool: &SqlitePool, user_name: &Name) -> Result<()> {
     sqlx::query!(
         r#"
         DELETE FROM user
-        WHERE user_id = ?
+        WHERE name = ?
         "#,
-        user_id
+        user_name
     )
     .execute(pool)
     .await?;
@@ -154,4 +157,14 @@ pub async fn change_email(pool: &SqlitePool, email: Email, new_email: Email) -> 
     .await?;
 
     Ok(())
+}
+
+/// Get count of user table
+pub async fn get_user_count(pool: &SqlitePool) -> Result<Option<i64>> {
+
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(ROWID) FROM user")
+        .fetch_one(pool)
+        .await?;
+
+    Ok(Some(count))
 }

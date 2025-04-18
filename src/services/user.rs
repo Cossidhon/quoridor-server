@@ -1,3 +1,4 @@
+/*
 use anyhow::Result;
 use crate::models::user::{User, Name, Email, Password};
 use crate::db::user;
@@ -48,3 +49,4 @@ pub async fn create(_pool: &sqlx::SqlitePool, name: Name, email: Email, password
     //user::create(pool, name, email, password_hash).await?;
     Ok(())
 }
+*/

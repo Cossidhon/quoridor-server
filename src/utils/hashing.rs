@@ -1,6 +1,6 @@
 use argon2::{Argon2, PasswordHasher, PasswordVerifier, password_hash::{SaltString, rand_core::OsRng}};
 use crate::models::user::Password;
-use tracing::error;
+use tracing::{debug,error};
 
 pub fn hash_password(password: Password) -> Result<String, String> {
     
@@ -18,6 +18,8 @@ pub fn hash_password(password: Password) -> Result<String, String> {
             return Err("Error hashing password".to_string());
         }
     };
+
+    debug!("Password Hash: {}", hash);
 
     // Return the hashed password
     Ok(hash.to_string())
